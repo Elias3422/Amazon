@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="de" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>ORGI-Cloud v5.0 | Professional Affiliate Engine</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        :root { 
+            --accent: #6366f1; 
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --bg-dark: #0f172a;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* UI Enhancements */
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(226, 232, 240, 0.5); }
+        .product-card { transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1); background: white; border: 1px solid #f1f5f9; }
+        .product-card:hover { transform: translateY(-12px); box-shadow: 0 40px 80px -20px rgba(0,0,0,0.08); border-color: var(--accent); }
+        
+        .img-zoom { transition: transform 0.8s ease; }
+        .product-card:hover .img-zoom { transform: scale(1.08); }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Animations */
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide { animation: slideIn 0.8s ease forwards; }
+
+        .loader-ring {
+            width: 50px; height: 50px;
+            border: 5px solid #f3f3f3; border-bottom-color: var(--accent);
+            border-radius: 50%; display: inline-block;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <div id="initialLoader" class="fixed inset-0 z-[200] bg-white flex items-center justify-center">
+        <div class="flex flex-col items-center">
+            <span class="loader-ring"></span>
+            <p class="mt-4 font-800 text-slate-400 tracking-[0.2em] uppercase text-[10px]">Cloud Synchronisation...</p>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="fixed bottom-8 right-8 z-[250] flex flex-col gap-3"></div>
+
+    <nav class="glass-nav fixed top-0 w-full z-[100] h-20">
+        <div class="max-w-[1600px] mx-auto px-6 h-full flex justify-between items-center">
+            <div class="flex items-center space-x-12">
+                <a href="#" class="flex items-center space-x-3 group">
+                    <div class="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl group-hover:rotate-12 transition-transform">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-900 tracking-tighter block leading-none">ORGI<span class="text-indigo-600">CLOUD</span></span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Enterprise v5.0</span>
+                    </div>
+                </a>
+                <div class="hidden lg:flex items-center space-x-8 text-[11px] font-900 uppercase tracking-widest text-slate-500">
+                    <button onclick="filterCat('all')" class="hover:text-indigo-600 transition">Katalog</button>
+                    <button onclick="filterCat('Hardware')" class="hover:text-indigo-600 transition">Hardware</button>
+                    <button onclick="filterCat('Gaming')" class="hover:text-indigo-600 transition">Gaming</button>
+                    <button onclick="scrollToNewsletter()" class="hover:text-indigo-600 transition">Newsletter</button>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative hidden sm:block">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="mainSearch" placeholder="Suche..." class="pl-12 pr-4 py-2.5 bg-slate-100 border-none rounded-xl w-64 focus:ring-2 focus:ring-indigo-500 outline-none transition text-sm font-bold">
+                </div>
+                <button onclick="toggleAdmin()" class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center hover:bg-indigo-600 transition shadow-lg">
+                    <i class="fas fa-user-shield"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="pt-48 pb-24 px-6 max-w-[1600px] mx-auto">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-20">
+            <div class="max-w-2xl text-center lg:text-left animate-slide">
+                <span class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-full text-[10px] font-900 uppercase tracking-widest mb-6 inline-block">Cloud-Based Affiliate Engine</span>
+                <h1 class="text-6xl lg:text-8xl font-900 tracking-tighter text-slate-900 leading-[0.9] mb-8">
+                    Smart Tech. <br><span class="gradient-text italic">Zero Bullshit.</span>
+                </h1>
+                <p class="text-xl text-slate-500 font-medium leading-relaxed mb-10">
+                    Verwalte deine Amazon Affiliate-Deals mit Lichtgeschwindigkeit. Gehostet auf Cloudflare, gesichert durch DNS-Verschlüsselung.
+                </p>
+                <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
+                    <button onclick="window.scrollTo(0, 1000)" class="bg-slate-900 text-white px-10 py-5 rounded-2xl font-900 text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-2xl">Inventory checken</button>
+                    <div class="flex items-center space-x-2 bg-white px-6 py-4 rounded-2xl border border-slate-100 shadow-sm">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="text-[10px] font-900 uppercase text-slate-400">Cloud Status: Online</span>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full lg:w-1/2 relative group animate-slide" style="animation-delay: 0.2s">
+                <div class="absolute -inset-4 bg-indigo-500/10 rounded-[3rem] blur-3xl"></div>
+                <div class="relative bg-white p-4 rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=1200" class="rounded-[2.5rem] w-full h-[450px] object-cover">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1600px] mx-auto px-6 pb-40">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div>
+                <h2 class="text-4xl font-900 text-slate-900 tracking-tighter">Live <span class="text-indigo-600">Inventory</span></h2>
+                <p class="text-slate-400 font-bold text-sm mt-2">Echtzeit-Synchronisierung mit Firebase</p>
+            </div>
+            <div class="flex bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+                <button onclick="filterCat('all')" class="cat-btn px-6 py-3 rounded-xl text-[10px] font-900 uppercase tracking-widest bg-slate-900 text-white transition-all">Alle</button>
+                <button onclick="filterCat('Hardware')" class="cat-btn px-6 py-3 rounded-xl text-[10px] font-900 uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all">Hardware</button>
+                <button onclick="filterCat('Gaming')" class="cat-btn px-6 py-3 rounded-xl text-[10px] font-900 uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all">Gaming</button>
+            </div>
+        </div>
+
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            </div>
+    </main>
+
+    <footer id="newsletter" class="bg-slate-950 text-white pt-32 pb-12 rounded-t-[4rem] px-6">
+        <div class="max-w-[1600px] mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-32 mb-32">
+                <div>
+                    <h2 class="text-5xl font-900 mb-8 leading-tight">Keinen Deal mehr <br><span class="text-indigo-500 italic">verpassen.</span></h2>
+                    <p class="text-slate-400 text-lg mb-10 max-w-md font-medium">Melde dich für unseren Cloud-Verteiler an. Sicherer Double-Opt-In Versand über Cloudflare DNS.</p>
+                    <div class="flex flex-col sm:flex-row gap-3 bg-white/5 p-3 rounded-[2.5rem] border border-white/10 max-w-xl">
+                        <input type="email" id="newsEmail" placeholder="Deine E-Mail Adresse" class="bg-transparent flex-grow px-6 py-4 outline-none font-bold text-white">
+                        <button onclick="handleSubscribe()" id="subBtn" class="bg-indigo-600 px-10 py-5 rounded-[1.8rem] font-900 uppercase text-[10px] tracking-widest hover:bg-white hover:text-indigo-600 transition-all">Anmelden</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-10">
+                    <div class="space-y-6">
+                        <span class="text-indigo-500 font-900 uppercase text-[10px] tracking-widest">Rechtliches</span>
+                        <div class="flex flex-col gap-4">
+                            <button onclick="showLegal('impressum')" class="text-left text-slate-400 hover:text-white font-bold transition">Impressum</button>
+                            <button onclick="showLegal('datenschutz')" class="text-left text-slate-400 hover:text-white font-bold transition">Datenschutz</button>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <span class="text-indigo-500 font-900 uppercase text-[10px] tracking-widest">Technologie</span>
+                        <div class="flex flex-col gap-4">
+                            <a href="#" class="text-slate-400 hover:text-white font-bold transition">Cloudflare Pages</a>
+                            <a href="#" class="text-slate-400 hover:text-white font-bold transition">Firebase Realtime</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+                <p class="text-[10px] font-900 uppercase tracking-widest text-slate-600">© 2026 ORGI-CLOUD DATABASE | Engine v5.0 Pro</p>
+                <div class="text-[10px] text-slate-500 italic max-w-xs text-right">
+                    Als Amazon-Partner verdiene ich an qualifizierten Verkäufen.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <aside id="adminArea" class="hidden fixed inset-0 z-[150] bg-slate-950/95 backdrop-blur-2xl overflow-y-auto">
+        <div class="min-h-screen p-6 md:p-20">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-20">
+                    <h2 class="text-5xl font-900 text-white tracking-tighter">Cloud <span class="text-indigo-500">Control.</span></h2>
+                    <button onclick="toggleAdmin()" class="text-slate-500 hover:text-white text-4xl"><i class="fas fa-times-circle"></i></button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
+                    <div class="lg:col-span-1 space-y-6 text-white">
+                        <div class="bg-indigo-600 p-10 rounded-[3rem] shadow-2xl shadow-indigo-500/20">
+                            <p class="text-indigo-200 text-xs font-900 uppercase tracking-widest mb-4">Aktiv im Inventory</p>
+                            <h3 id="statCount" class="text-7xl font-900">0</h3>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-10 rounded-[3rem]">
+                            <p class="text-slate-500 text-xs font-900 uppercase tracking-widest mb-4">Newsletter Subs</p>
+                            <h3 id="statNews" class="text-4xl font-900">...</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="lg:col-span-2">
+                        <form id="adminForm" class="bg-white/5 border border-white/10 p-10 rounded-[3rem] space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <input type="text" id="pTitle" placeholder="Produkt Name" class="bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:ring-2 focus:ring-indigo-500 font-bold" required>
+                                <input type="number" step="0.01" id="pPrice" placeholder="Preis in €" class="bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:ring-2 focus:ring-indigo-500 font-bold" required>
+                            </div>
+                            <input type="url" id="pImage" placeholder="Bild URL (Direktlink)" class="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none" required>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <input type="url" id="pLink" placeholder="Amazon Affiliate Link" class="bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none" required>
+                                <select id="pCat" class="bg-slate-800 border-none p-5 rounded-2xl text-white font-bold outline-none appearance-none">
+                                    <option>Hardware</option><option>Gaming</option><option>Smartphone</option><option>Zubehör</option>
+                                </select>
+                            </div>
+                            <textarea id="pDesc" placeholder="Verkaufs-Pitch (Max 200 Zeichen)" class="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white h-32 outline-none" required></textarea>
+                            <button type="submit" class="w-full bg-white text-slate-950 p-6 rounded-2xl font-900 uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all shadow-xl">In Cloud übertragen</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div id="legalModal" class="hidden fixed inset-0 z-[300] bg-slate-950/90 backdrop-blur-md p-6 flex items-center justify-center">
+        <div class="bg-white w-full max-w-3xl rounded-[3rem] p-12 relative shadow-2xl overflow-y-auto max-h-[85vh]">
+            <button onclick="closeLegal()" class="absolute top-8 right-8 text-2xl text-slate-300 hover:text-slate-900"><i class="fas fa-times"></i></button>
+            <div id="legalText" class="prose prose-slate max-w-none prose-sm font-medium"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyBe9Ev-882X2YpJZdNyFdkSRh8XRZdLOOE",
+            databaseURL: "https://orgi-665e5-default-rtdb.firebaseio.com",
+            projectId: "orgi-665e5",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const pRef = ref(db, 'affiliate_products');
+        const nRef = ref(db, 'newsletter_subs_active');
+
+        let MASTER_DATA = [];
+        let FILTER = 'all';
+
+        // TOAST SYSTEM
+        window.toast = (msg, type = 'success') => {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `p-5 rounded-2xl shadow-2xl text-white font-900 text-[10px] tracking-widest uppercase animate-slide flex items-center gap-3 ${type === 'success' ? 'bg-indigo-600' : 'bg-red-500'}`;
+            el.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'}"></i> ${msg}`;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 4000);
+        };
+
+        // UI TOGGLES
+        window.toggleAdmin = () => {
+            const area = document.getElementById('adminArea');
+            if(area.classList.contains('hidden')) {
+                const p = prompt("Cloud Access Code:");
+                if(p === "admin123") {
+                    area.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                } else toast("Zugriff verweigert", "error");
+            } else {
+                area.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        };
+
+        window.showLegal = (type) => {
+            const modal = document.getElementById('legalModal');
+            const target = document.getElementById('legalText');
+            const content = {
+                impressum: `<h2>Impressum</h2><p><b>Angaben gemäß § 5 TMG</b></p><p>[DEIN NAME]<br>[STRASSE HAUSNR]<br>[PLZ STADT]</p><h3>Kontakt</h3><p>E-Mail: [DEINE MAIL]<br>Website: deinedomain.de</p><h3>Haftungsausschluss</h3><p>Wir übernehmen keine Gewähr für die Richtigkeit der Preise auf Drittanbieterseiten.</p>`,
+                datenschutz: `<h2>Datenschutz</h2><p>Wir speichern Ihre E-Mail Adresse nur nach erfolgreichem Double-Opt-In. Wir nutzen Cloudflare zur Optimierung der Ladezeiten und Firebase als verschlüsselte Datenbank.</p>`
+            };
+            target.innerHTML = content[type];
+            modal.classList.remove('hidden');
+        };
+        window.closeLegal = () => document.getElementById('legalModal').classList.add('hidden');
+
+        // DATABASE SYNC & RENDER
+        onValue(pRef, (snap) => {
+            const data = snap.val() || {};
+            MASTER_DATA = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+            document.getElementById('statCount').innerText = MASTER_DATA.length;
+            render();
+            document.getElementById('initialLoader').style.opacity = '0';
+            setTimeout(() => document.getElementById('initialLoader').style.display = 'none', 500);
+        });
+
+        window.filterCat = (c) => {
+            FILTER = c;
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.classList.remove('bg-slate-900', 'text-white');
+                b.classList.add('text-slate-400');
+            });
+            event.target.classList.add('bg-slate-900', 'text-white');
+            render();
+        };
+
+        document.getElementById('mainSearch').addEventListener('input', render);
+
+        function render() {
+            const grid = document.getElementById('productGrid');
+            const search = document.getElementById('mainSearch').value.toLowerCase();
+            const isAdmin = !document.getElementById('adminArea').classList.contains('hidden');
+            
+            grid.innerHTML = '';
+            
+            const filtered = MASTER_DATA.filter(p => {
+                const matchesSearch = p.title.toLowerCase().includes(search);
+                const matchesCat = FILTER === 'all' || p.category === FILTER;
+                return matchesSearch && matchesCat;
+            });
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center text-slate-300 font-900 uppercase tracking-[10px]">Keine Assets gefunden</div>`;
+                return;
+            }
+
+            filtered.reverse().forEach(p => {
+                grid.innerHTML += `
+                    <article class="product-card p-4 rounded-[2.5rem] flex flex-col h-full">
+                        <div class="relative h-64 bg-slate-50 rounded-[2rem] overflow-hidden mb-6 flex items-center justify-center p-8">
+                            <img src="${p.imageURL}" class="img-zoom max-h-full object-contain">
+                            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-4 py-2 rounded-2xl text-[9px] font-900 text-indigo-600 shadow-sm border border-slate-100 uppercase tracking-widest">${p.category}</div>
+                        </div>
+                        <div class="px-3 flex-grow">
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="text-xl font-bold text-slate-900 leading-[1.2] line-clamp-2">${p.title}</h3>
+                                <span class="text-xl font-900 text-indigo-600">${p.price}€</span>
+                            </div>
+                            <p class="text-slate-400 text-sm font-medium leading-relaxed line-clamp-3 mb-8">${p.description}</p>
+                        </div>
+                        <div class="p-2">
+                            <a href="${p.affiliateLink}" target="_blank" class="flex items-center justify-center gap-3 w-full bg-slate-900 text-white py-5 rounded-2xl font-900 text-[10px] tracking-widest hover:bg-indigo-600 transition-all shadow-lg uppercase">
+                                <i class="fab fa-amazon"></i> Auf Amazon prüfen
+                            </a>
+                            ${isAdmin ? `<button onclick="deleteProduct('${p.id}')" class="w-full mt-4 text-[9px] font-900 text-red-400 uppercase tracking-widest hover:text-red-600">Asset vernichten</button>` : ''}
+                        </div>
+                    </article>
+                `;
+            });
+        }
+
+        // ACTIONS
+        document.getElementById('adminForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Speichere...';
+            
+            try {
+                await push(pRef, {
+                    title: document.getElementById('pTitle').value,
+                    price: document.getElementById('pPrice').value,
+                    imageURL: document.getElementById('pImage').value,
+                    affiliateLink: document.getElementById('pLink').value,
+                    category: document.getElementById('pCat').value,
+                    description: document.getElementById('pDesc').value,
+                    created: Date.now()
+                });
+                e.target.reset();
+                toast("Datensatz erfolgreich in der Cloud gespeichert");
+            } catch(e) { toast("Fehler bei Übertragung", "error"); }
+            btn.innerHTML = 'In Cloud übertragen';
+        };
+
+        window.deleteProduct = async (id) => {
+            if(confirm("Soll dieses Asset permanent gelöscht werden?")) {
+                await remove(ref(db, `affiliate_products/${id}`));
+                toast("Asset gelöscht");
+            }
+        };
+
+        // CLOUDFLARE NEWSLETTER WORKER CALL
+        window.handleSubscribe = async () => {
+            const email = document.getElementById('newsEmail').value;
+            const btn = document.getElementById('subBtn');
+            if(!email.includes('@')) return toast("E-Mail ungültig", "error");
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i>';
+
+            try {
+                // HIER DEINE CLOUDFLARE WORKER URL
+                const WORKER_URL = 'https://newsletter-handler.elias256.workers.dev';
+                const res = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ email: email }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if(res.ok) {
+                    toast("Check dein Postfach (Double-Opt-In)!");
+                    document.getElementById('newsEmail').value = '';
+                } else { toast("Worker Fehler", "error"); }
+            } catch(e) { toast("Cloudflare offline", "error"); }
+            
+            btn.disabled = false;
+            btn.innerHTML = 'Anmelden';
+        };
+
+        window.scrollToNewsletter = () => {
+            document.getElementById('newsletter').scrollIntoView({ behavior: 'smooth' });
+        };
+    </script>
+</body>
+</html>
