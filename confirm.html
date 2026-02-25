@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-slate-900 text-white flex items-center justify-center min-h-screen">
+    <div class="text-center p-10 bg-slate-800 rounded-[3rem] border border-slate-700 shadow-2xl max-w-sm">
+        <h1 id="msg" class="text-2xl font-black mb-4 uppercase">Verifiziere E-Mail...</h1>
+        <p id="submsg" class="text-slate-400 text-sm">Daten werden synchronisiert.</p>
+    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        const firebaseConfig = { /* DEINE FIREBASE DATEN HIER REIN */ };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const email = new URLSearchParams(window.location.search).get('email');
+        if(email) {
+            push(ref(db, 'newsletter_subs_active'), { email, confirmedAt: new Date().toISOString() })
+            .then(() => {
+                document.getElementById('msg').innerText = "Erfolgreich!";
+                document.getElementById('submsg').innerText = "Du bist jetzt im Verteiler.";
+            });
+        }
+    </script>
+</body></html>
